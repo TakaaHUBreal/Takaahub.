@@ -1,0 +1,725 @@
+--// ==========================================
+--// TAKAA HUB - FIXED TOGGLE BUTTON & SOUNDS 🖤❤️
+--// ==========================================
+
+local CoreGui = game:GetService("CoreGui")
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Stats = game:GetService("Stats")
+local SoundService = game:GetService("SoundService")
+local ContentProvider = game:GetService("ContentProvider")
+local VirtualUser = game:GetService("VirtualUser")
+local localPlayer = Players.LocalPlayer
+
+-- 🔊 សំឡេងចុចគ្រប់ប៊ូតុង
+local clickSound = Instance.new("Sound")
+clickSound.SoundId = "rbxassetid://6034947895"
+clickSound.Volume = 1
+clickSound.Parent = SoundService
+
+pcall(function()
+    ContentProvider:PreloadAsync({clickSound})
+end)
+
+local function playClickSound()
+    pcall(function()
+        local sClone = clickSound:Clone()
+        sClone.Parent = SoundService
+        sClone:Play()
+        task.delay(1, function()
+            sClone:Destroy()
+        end)
+    end)
+end
+
+local success, parentTarget = pcall(function()
+    return CoreGui:FindFirstChild("CoreGui") or localPlayer:WaitForChild("PlayerGui")
+end)
+if not success or not parentTarget then
+    parentTarget = localPlayer:WaitForChild("PlayerGui")
+end
+
+-- លុប GUI ចាស់ចោលកុំឱ្យជាន់គ្នា
+pcall(function()
+    if parentTarget:FindFirstChild("TakaaHubBeoGUI") then
+        parentTarget.TakaaHubBeoGUI:Destroy()
+    end
+    if localPlayer.PlayerGui:FindFirstChild("TakaaHubBeoGUI") then
+        localPlayer.PlayerGui.TakaaHubBeoGUI:Destroy()
+    end
+end)
+
+-- 1. ScreenGui (ប្រើ PlayerGui ដើម្បីធានាថាវាបង្ហាញលើអេក្រង់ទូរស័ព្ទនិងកុំព្យូទ័របានច្បាស់)
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "TakaaHubBeoGUI"
+screenGui.ResetOnSpawn = false
+screenGui.DisplayOrder = 999999
+screenGui.Parent = localPlayer:WaitForChild("PlayerGui")
+
+-- 🔔 Notification Function
+local function sendNotification(text)
+    pcall(function()
+        local notifFrame = Instance.new("Frame")
+        notifFrame.Size = UDim2.new(0, 230, 0, 36)
+        notifFrame.Position = UDim2.new(0.5, -115, 0, -45)
+        notifFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+        notifFrame.BorderSizePixel = 0
+        notifFrame.Parent = screenGui
+
+        local nc = Instance.new("UICorner")
+        nc.CornerRadius = UDim.new(0, 6)
+        nc.Parent = notifFrame
+
+        local ns = Instance.new("UIStroke")
+        ns.Color = Color3.fromRGB(220, 30, 30)
+        ns.Thickness = 1.8
+        ns.Parent = notifFrame
+
+        local nt = Instance.new("TextLabel")
+        nt.Size = UDim2.new(1, 0, 1, 0)
+        nt.BackgroundTransparency = 1
+        nt.Text = text
+        nt.TextColor3 = Color3.fromRGB(255, 255, 255)
+        nt.TextSize, nt.Font = 8.5, Enum.Font.GothamBold
+        nt.Parent = notifFrame
+
+        notifFrame:TweenPosition(UDim2.new(0.5, -115, 0, 12), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.2, true)
+        task.delay(1.8, function()
+            notifFrame:TweenPosition(UDim2.new(0.5, -115, 0, -45), Enum.EasingDirection.In, Enum.EasingStyle.Quad, 0.2, true)
+            task.delay(0.2, function() notifFrame:Destroy() end)
+        end)
+    end)
+end
+
+-- 3. Main Frame (ប្រកាសទុកមុនដើម្បីឱ្យប៊ូតុង Toggle ហៅបាន)
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 310, 0, 215)
+mainFrame.Position = UDim2.new(0.5, -155, 0.5, -107)
+mainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+mainFrame.BorderSizePixel = 0
+mainFrame.Visible = true
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Parent = screenGui
+
+local frameCorner = Instance.new("UICorner")
+frameCorner.CornerRadius = UDim.new(0, 6)
+frameCorner.Parent = mainFrame
+
+local frameStroke = Instance.new("UIStroke")
+frameStroke.Color = Color3.fromRGB(220, 30, 30)
+frameStroke.Thickness = 1.5
+frameStroke.Parent = mainFrame
+
+-- 2. Floating Toggle Button (ប៊ូតុងបើកបិទធំងាយចុច)
+local toggleButton = Instance.new("ImageButton")
+toggleButton.Size = UDim2.new(0, 50, 0, 50)
+toggleButton.Position = UDim2.new(0.03, 0, 0.12, 0)
+toggleButton.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+toggleButton.Image = Players:GetUserThumbnailAsync(localPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
+toggleButton.Active = true
+toggleButton.Draggable = true
+toggleButton.Parent = screenGui
+
+local btnCorner = Instance.new("UICorner")
+btnCorner.CornerRadius = UDim.new(1, 0)
+btnCorner.Parent = toggleButton
+
+local btnStroke = Instance.new("UIStroke")
+btnStroke.Color = Color3.fromRGB(220, 30, 30)
+btnStroke.Thickness = 2.5
+btnStroke.Parent = toggleButton
+
+toggleButton.MouseButton1Click:Connect(function()
+    playClickSound()
+    mainFrame.Visible = not mainFrame.Visible
+    sendNotification(mainFrame.Visible and "Menu Opened" : "Menu Closed")
+end)
+
+-- Title Bar
+local titleBar = Instance.new("Frame")
+titleBar.Size = UDim2.new(1, 0, 0, 22)
+titleBar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+titleBar.BorderSizePixel = 0
+titleBar.Parent = mainFrame
+
+local titleCorner = Instance.new("UICorner")
+titleCorner.CornerRadius = UDim.new(0, 6)
+titleBar.Parent = mainFrame
+
+local titleAvatar = Instance.new("ImageLabel")
+titleAvatar.Size = UDim2.new(0, 16, 0, 16)
+titleAvatar.Position = UDim2.new(0, 5, 0.5, -8)
+titleAvatar.BackgroundTransparency = 1
+titleAvatar.Image = Players:GetUserThumbnailAsync(localPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
+titleAvatar.Parent = titleBar
+
+local taCorner = Instance.new("UICorner")
+taCorner.CornerRadius = UDim.new(1, 0)
+taCorner.Parent = titleAvatar
+
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, -50, 1, 0)
+titleLabel.Position = UDim2.new(0, 26, 0, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "TAKAA HUB - ALL GAME"
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.TextSize, titleLabel.Font = 9, Enum.Font.GothamBold
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.Parent = titleBar
+
+-- ❌ Close Button
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0, 18, 0, 18)
+closeBtn.Position = UDim2.new(1, -21, 0.5, -9)
+closeBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+closeBtn.Text = "X"
+closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeBtn.TextSize, closeBtn.Font = 8, Enum.Font.GothamBold
+closeBtn.Parent = titleBar
+
+local cbCorner = Instance.new("UICorner")
+cbCorner.CornerRadius = UDim.new(0, 4)
+cbCorner.Parent = closeBtn
+
+closeBtn.MouseButton1Click:Connect(function()
+    playClickSound()
+    mainFrame.Visible = false
+    sendNotification("Menu Hidden")
+end)
+
+-- ==========================================
+-- 👤 LEFT SIDEBAR
+-- ==========================================
+local sidebar = Instance.new("Frame")
+sidebar.Size = UDim2.new(0, 115, 1, -22)
+sidebar.Position = UDim2.new(0, 0, 0, 22)
+sidebar.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+sidebar.BorderSizePixel = 0
+sidebar.Parent = mainFrame
+
+local pAvatar = Instance.new("ImageLabel")
+pAvatar.Size = UDim2.new(0, 32, 0, 32)
+pAvatar.Position = UDim2.new(0, 6, 0, 5)
+pAvatar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+pAvatar.Image = Players:GetUserThumbnailAsync(localPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size150x150)
+pAvatar.Parent = sidebar
+
+local paCorner = Instance.new("UICorner")
+paCorner.CornerRadius = UDim.new(1, 0)
+paCorner.Parent = pAvatar
+
+local pName = Instance.new("TextLabel")
+pName.Size = UDim2.new(0, 70, 0, 13)
+pName.Position = UDim2.new(0, 42, 0, 3)
+pName.BackgroundTransparency = 1
+pName.Text = localPlayer.DisplayName
+pName.TextColor3 = Color3.fromRGB(255, 255, 255)
+pName.TextSize, pName.Font = 8, Enum.Font.GothamBold
+pName.TextXAlignment = Enum.TextXAlignment.Left
+pName.Parent = sidebar
+
+local pUser = Instance.new("TextLabel")
+pUser.Size = UDim2.new(0, 70, 0, 11)
+pUser.Position = UDim2.new(0, 42, 0, 16)
+pUser.BackgroundTransparency = 1
+pUser.Text = "@" .. localPlayer.Name
+pUser.TextColor3 = Color3.fromRGB(180, 180, 180)
+pUser.TextSize, pUser.Font = 7, Enum.Font.GothamBold
+pUser.TextXAlignment = Enum.TextXAlignment.Left
+pUser.Parent = sidebar
+
+local pPing = Instance.new("TextLabel")
+pPing.Size = UDim2.new(0, 70, 0, 11)
+pPing.Position = UDim2.new(0, 42, 0, 27)
+pPing.BackgroundTransparency = 1
+pPing.Text = "Ping: ..."
+pPing.TextColor3 = Color3.fromRGB(50, 255, 50)
+pPing.TextSize, pPing.Font = 7, Enum.Font.GothamBold
+pPing.TextXAlignment = Enum.TextXAlignment.Left
+pPing.Parent = sidebar
+
+task.spawn(function()
+    while true do
+        pcall(function()
+            local ping = math.floor(Stats.Network.ServerStatsItem["Data Ping"]:GetValue())
+            pPing.Text = "Ping: " .. ping .. "ms"
+        end)
+        task.wait(1)
+    end
+end)
+
+-- ==========================================
+-- 📂 PAGES CONTAINER
+-- ==========================================
+local function createPage()
+    local p = Instance.new("ScrollingFrame")
+    p.Size = UDim2.new(1, -120, 1, -26)
+    p.Position = UDim2.new(0, 118, 0, 24)
+    p.BackgroundTransparency = 1
+    p.CanvasSize = UDim2.new(0, 0, 0, 250)
+    p.ScrollBarThickness = 2
+    p.Visible = false
+    p.Parent = mainFrame
+    return p
+end
+
+local pageMain = createPage()
+local pageTeleport = createPage()
+local pageSpeed = createPage()
+local pageFly = createPage()
+local pageSafeZone = createPage()
+local pageMenu = createPage()
+
+pageMain.Visible = true
+
+local function createMenuBtn(name, posY, targetPage)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, -8, 0, 18)
+    btn.Position = UDim2.new(0, 4, 0, posY)
+    btn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    btn.Text = "• " .. name
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.TextSize, btn.Font = 7, Enum.Font.GothamBold
+    btn.TextXAlignment = Enum.TextXAlignment.Left
+    btn.Parent = sidebar
+    
+    local bc = Instance.new("UICorner")
+    bc.CornerRadius = UDim.new(0, 3)
+    bc.Parent = btn
+    
+    btn.MouseButton1Click:Connect(function()
+        playClickSound()
+        pageMain.Visible = (targetPage == "Main")
+        pageTeleport.Visible = (targetPage == "Teleport")
+        pageSpeed.Visible = (targetPage == "Speed")
+        pageFly.Visible = (targetPage == "Fly")
+        pageSafeZone.Visible = (targetPage == "SafeZone")
+        pageMenu.Visible = (targetPage == "Menu")
+    end)
+end
+
+createMenuBtn("Main", 45, "Main")
+createMenuBtn("Menu (Extra)", 65, "Menu")
+createMenuBtn("Teleport", 85, "Teleport")
+createMenuBtn("Speed", 105, "Speed")
+createMenuBtn("Fly", 125, "Fly")
+createMenuBtn("Safe Zone", 145, "SafeZone")
+
+-- ==========================================
+-- ⚙ PAGE 1: MAIN
+-- ==========================================
+local function createToggle(parent, name, posY, callback)
+    local itemFrame = Instance.new("Frame")
+    itemFrame.Size = UDim2.new(1, 0, 0, 20)
+    itemFrame.Position = UDim2.new(0, 0, 0, posY)
+    itemFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    itemFrame.BorderSizePixel = 0
+    itemFrame.Parent = parent
+    
+    local itc = Instance.new("UICorner")
+    itc.CornerRadius = UDim.new(0, 3)
+    itc.Parent = itemFrame
+    
+    local lbl = Instance.new("TextLabel")
+    lbl.Size = UDim2.new(1, -24, 1, 0)
+    lbl.Position = UDim2.new(0, 4, 0, 0)
+    lbl.BackgroundTransparency = 1
+    lbl.Text = name
+    lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+    lbl.TextSize, lbl.Font = 7, Enum.Font.GothamBold
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.Parent = itemFrame
+    
+    local toggleBtn = Instance.new("TextButton")
+    toggleBtn.Size = UDim2.new(0, 20, 0, 10)
+    toggleBtn.Position = UDim2.new(1, -22, 0.5, -5)
+    toggleBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    toggleBtn.Text = ""
+    toggleBtn.Parent = itemFrame
+    
+    local tgc = Instance.new("UICorner")
+    tgc.CornerRadius = UDim.new(1, 0)
+    tgc.Parent = toggleBtn
+    
+    local circle = Instance.new("Frame")
+    circle.Size = UDim2.new(0, 6, 0, 6)
+    circle.Position = UDim2.new(0, 2, 0.5, -3)
+    circle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    circle.Parent = toggleBtn
+    
+    local cc = Instance.new("UICorner")
+    cc.CornerRadius = UDim.new(1, 0)
+    cc.Parent = circle
+    
+    local state = false
+    toggleBtn.MouseButton1Click:Connect(function()
+        playClickSound()
+        state = not state
+        toggleBtn.BackgroundColor3 = state and Color3.fromRGB(220, 30, 30) or Color3.fromRGB(40, 40, 40)
+        circle.Position = state and UDim2.new(1, -8, 0.5, -3) or UDim2.new(0, 2, 0.5, -3)
+        sendNotification(name .. ": " .. (state and "ON" or "OFF"))
+        pcall(function() callback(state) end)
+    end)
+end
+
+createToggle(pageMain, "Fullbright Light", 2, function(enabled)
+    pcall(function()
+        local lighting = game:GetService("Lighting")
+        lighting.Brightness = enabled and 4 or 1
+        lighting.ClockTime = enabled and 14 or 0
+    end)
+end)
+
+local pickupActive = false
+createToggle(pageMain, "Auto Pickup Items", 24, function(enabled)
+    pickupActive = enabled
+end)
+
+task.spawn(function()
+    while true do
+        task.wait(0.05)
+        if pickupActive then
+            pcall(function()
+                local char = localPlayer.Character
+                if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+                local root = char.HumanoidRootPart
+                for _, obj in ipairs(Workspace:GetDescendants()) do
+                    if not pickupActive then break end
+                    if obj:IsA("BasePart") or obj:IsA("Model") then
+                        local n = obj.Name:lower()
+                        if n:match("item") or n:match("key") or n:match("tool") or n:match("pickup") or n:match("coin") or n:match("cash") then
+                            local tpPart = obj:IsA("BasePart") and obj or obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+                            if tpPart then
+                                root.CFrame = tpPart.CFrame + Vector3.new(0, 2, 0)
+                                task.wait(0.02)
+                            end
+                        end
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+-- ==========================================
+-- 📋 PAGE 6: MENU
+-- ==========================================
+local menuY = 2
+
+createToggle(pageMenu, "Auto Jump", menuY, function(enabled)
+    _G.AutoJump = enabled
+    task.spawn(function()
+        while _G.AutoJump do
+            task.wait(1.5)
+            pcall(function()
+                local char = localPlayer.Character
+                if char and char:FindFirstChild("Humanoid") then
+                    char.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                end
+            end)
+        end
+    end)
+end)
+menuY = menuY + 22
+
+createToggle(pageMenu, "Anti AFK", menuY, function(enabled)
+    _G.AntiAFK = enabled
+    if _G.AntiAFK then
+        pcall(function()
+            local vu = VirtualUser
+            local connection
+            connection = localPlayer.Idled:Connect(function()
+                if not _G.AntiAFK then
+                    if connection then connection:Disconnect() end
+                    return
+                end
+                vu:Button2Down(Vector2.new(0,0), Workspace.CurrentCamera.CFrame)
+                task.wait(1)
+                vu:Button2Up(Vector2.new(0,0), Workspace.CurrentCamera.CFrame)
+            end)
+        end)
+    end
+end)
+menuY = menuY + 22
+
+-- ⚡ Toxic Fast Chat
+createToggle(pageMenu, "Anti Run AI Auto & Toxic", menuY, function(enabled)
+    _G.AICute = enabled
+    task.spawn(function()
+        local toxicMessages = {
+            "Kon mi ay",
+            "Ters mh men haa 😢",
+            "Lg jg ters mh men",
+            "Toxic mh men",
+            "Yii kon mi sperng os sach",
+            "Pyat bek mort hg",
+            "Kom jenh mk pler pek 🤡",
+            "Kon mi sdan jkea ma puch",
+            "Kon mi ah lomdab",
+            "Yat tix hg",
+            "Pler mes kon mi aleay",
+            "Kon mi aleay",
+            "Kon",
+            "Mi jvak",
+            "Kon mi poop 💩",
+            "Yi",
+            "Kdmh nis",
+            "Ters ke mes"
+        }
+        while _G.AICute do
+            task.wait(0.6) 
+            pcall(function()
+                local msg = toxicMessages[math.random(1, #toxicMessages)]
+                local textChatService = game:GetService("TextChatService")
+                if textChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+                    local channels = textChatService.TextChannels:FindFirstChild("RBXGeneral")
+                    if channels then
+                        channels:SendAsync(msg)
+                    end
+                else
+                    game:GetService("ReplicatedStorage"):FindFirstChild("DefaultChatSystemChatEvents", true):FireServer(msg, "All")
+                end
+            end)
+        end
+    end)
+end)
+
+-- ==========================================
+-- 🎯 PAGE 2: TELEPORT PLAYER LIST
+-- ==========================================
+local tpTitle = Instance.new("TextLabel")
+tpTitle.Size = UDim2.new(1, 0, 0, 14)
+tpTitle.Position = UDim2.new(0, 0, 0, 2)
+tpTitle.BackgroundTransparency = 1
+tpTitle.Text = "Select Player to TP:"
+tpTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+tpTitle.TextSize, tpTitle.Font = 7, Enum.Font.GothamBold
+tpTitle.TextXAlignment = Enum.TextXAlignment.Left
+tpTitle.Parent = pageTeleport
+
+local playerScroll = Instance.new("ScrollingFrame")
+playerScroll.Size = UDim2.new(1, 0, 1, -16)
+playerScroll.Position = UDim2.new(0, 0, 0, 16)
+playerScroll.BackgroundTransparency = 1
+playerScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+playerScroll.ScrollBarThickness = 2
+playerScroll.Parent = pageTeleport
+
+local function refreshPlayerList()
+    for _, ch in ipairs(playerScroll:GetChildren()) do
+        if ch:IsA("TextButton") then ch:Destroy() end
+    end
+    
+    local yPos = 0
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= localPlayer then
+            local pBtn = Instance.new("TextButton")
+            pBtn.Size = UDim2.new(1, -2, 0, 18)
+            pBtn.Position = UDim2.new(0, 0, 0, yPos)
+            pBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+            pBtn.Text = " " .. p.DisplayName .. " (@" .. p.Name .. ")"
+            pBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            pBtn.TextSize, pBtn.Font = 7, Enum.Font.GothamBold
+            pBtn.TextXAlignment = Enum.TextXAlignment.Left
+            pBtn.Parent = playerScroll
+            
+            local pbc = Instance.new("UICorner")
+            pbc.CornerRadius = UDim.new(0, 3)
+            pbc.Parent = pBtn
+            
+            pBtn.MouseButton1Click:Connect(function()
+                playClickSound()
+                pcall(function()
+                    local myChar = localPlayer.Character
+                    if myChar and myChar:FindFirstChild("HumanoidRootPart") and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                        myChar.HumanoidRootPart.CFrame = p.Character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
+                        sendNotification("TP to " .. p.DisplayName)
+                    end
+                end)
+            end)
+            
+            yPos = yPos + 20
+        end
+    end
+    playerScroll.CanvasSize = UDim2.new(0, 0, 0, yPos)
+end
+
+Players.PlayerAdded:Connect(refreshPlayerList)
+Players.PlayerRemoving:Connect(refreshPlayerList)
+task.spawn(refreshPlayerList)
+
+-- ==========================================
+-- ⚡ PAGE 3: SPEED SYSTEM
+-- ==========================================
+local speeds = {10, 25, 50, 75, 100}
+local currentSpeed = 16
+local speedActive = false
+local speedY = 2
+
+local speedToggleBtn = Instance.new("TextButton")
+speedToggleBtn.Size = UDim2.new(1, 0, 0, 20)
+speedToggleBtn.Position = UDim2.new(0, 0, 0, speedY)
+speedToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+speedToggleBtn.Text = "Speed: OFF"
+speedToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+speedToggleBtn.TextSize, speedToggleBtn.Font = 7, Enum.Font.GothamBold
+speedToggleBtn.Parent = pageSpeed
+
+local stc = Instance.new("UICorner")
+stc.CornerRadius = UDim.new(0, 3)
+stc.Parent = speedToggleBtn
+
+speedToggleBtn.MouseButton1Click:Connect(function()
+    playClickSound()
+    speedActive = not speedActive
+    if speedActive then
+        speedToggleBtn.BackgroundColor3 = Color3.fromRGB(220, 30, 30)
+        speedToggleBtn.Text = "Speed: ON (" .. currentSpeed .. ")"
+    else
+        speedToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+        speedToggleBtn.Text = "Speed: OFF"
+        pcall(function()
+            if localPlayer.Character and localPlayer.Character:FindFirstChild("Humanoid") then
+                localPlayer.Character.Humanoid.WalkSpeed = 16
+            end
+        end)
+    end
+end)
+
+speedY = speedY + 22
+
+for _, spd in ipairs(speeds) do
+    local spdBtn = Instance.new("TextButton")
+    spdBtn.Size = UDim2.new(1, 0, 0, 18)
+    spdBtn.Position = UDim2.new(0, 0, 0, speedY)
+    spdBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    spdBtn.Text = "Speed " .. spd
+    spdBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    spdBtn.TextSize, spdBtn.Font = 7, Enum.Font.GothamBold
+    spdBtn.Parent = pageSpeed
+    
+    local sc = Instance.new("UICorner")
+    sc.CornerRadius = UDim.new(0, 3)
+    sc.Parent = spdBtn
+    
+    spdBtn.MouseButton1Click:Connect(function()
+        playClickSound()
+        currentSpeed = spd
+        if speedActive then
+            speedToggleBtn.Text = "Speed: ON (" .. currentSpeed .. ")"
+        end
+    end)
+    
+    speedY = speedY + 20
+end
+
+RunService.RenderStepped:Connect(function()
+    if speedActive then
+        pcall(function()
+            local char = localPlayer.Character
+            if char and char:FindFirstChild("Humanoid") and char:FindFirstChild("HumanoidRootPart") then
+                local hum = char.Humanoid
+                local root = char.HumanoidRootPart
+                hum.WalkSpeed = currentSpeed
+                if hum.MoveDirection.Magnitude > 0 then
+                    root.Velocity = Vector3.new(hum.MoveDirection.X * currentSpeed, root.Velocity.Y, hum.MoveDirection.Z * currentSpeed)
+                end
+            end
+        end)
+    end
+end)
+
+-- ==========================================
+-- 🕊️ PAGE 4: FLY SYSTEM
+-- ==========================================
+local flyActive = false
+local flySpeed = 50
+local flyToggleBtn = Instance.new("TextButton")
+flyToggleBtn.Size = UDim2.new(1, 0, 0, 20)
+flyToggleBtn.Position = UDim2.new(0, 0, 0, 2)
+flyToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+flyToggleBtn.Text = "Fly: OFF"
+flyToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+flyToggleBtn.TextSize, flyToggleBtn.Font = 7, Enum.Font.GothamBold
+flyToggleBtn.Parent = pageFly
+
+local ftc = Instance.new("UICorner")
+ftc.CornerRadius = UDim.new(0, 3)
+ftc.Parent = flyToggleBtn
+
+flyToggleBtn.MouseButton1Click:Connect(function()
+    playClickSound()
+    flyActive = not flyActive
+    if flyActive then
+        flyToggleBtn.BackgroundColor3 = Color3.fromRGB(220, 30, 30)
+        flyToggleBtn.Text = "Fly: ON"
+    else
+        flyToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+        flyToggleBtn.Text = "Fly: OFF"
+        pcall(function()
+            local char = localPlayer.Character
+            if char and char:FindFirstChild("Humanoid") then
+                char.Humanoid.PlatformStand = false
+            end
+        end)
+    end
+end)
+
+RunService.RenderStepped:Connect(function()
+    if flyActive then
+        pcall(function()
+            local char = localPlayer.Character
+            if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("Humanoid") then
+                local root = char.HumanoidRootPart
+                local hum = char.Humanoid
+                hum.PlatformStand = true
+                local cam = Workspace.CurrentCamera
+                local moveDir = Vector3.new()
+                
+                if UserInputService:IsKeyDown(Enum.KeyCode.W) then moveDir = moveDir + cam.CFrame.LookVector end
+                if UserInputService:IsKeyDown(Enum.KeyCode.S) then moveDir = moveDir - cam.CFrame.LookVector end
+                if UserInputService:IsKeyDown(Enum.KeyCode.A) then moveDir = moveDir - cam.CFrame.RightVector end
+                if UserInputService:IsKeyDown(Enum.KeyCode.D) then moveDir = moveDir + cam.CFrame.RightVector end
+                
+                if moveDir.Magnitude > 0 then
+                    root.Velocity = moveDir.Unit * flySpeed
+                else
+                    root.Velocity = Vector3.new(0, 0.1, 0)
+                end
+            end
+        end)
+    end
+end)
+
+-- ==========================================
+-- 🛡️ PAGE 5: SAFE ZONE
+-- ==========================================
+local szBtn = Instance.new("TextButton")
+szBtn.Size = UDim2.new(1, 0, 0, 22)
+szBtn.Position = UDim2.new(0, 0, 0, 2)
+szBtn.BackgroundColor3 = Color3.fromRGB(220, 30, 30)
+szBtn.Text = "Teleport to Safe Sky"
+szBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+szBtn.TextSize, szBtn.Font = 7, Enum.Font.GothamBold
+szBtn.Parent = pageSafeZone
+
+local szc = Instance.new("UICorner")
+szc.CornerRadius = UDim.new(0, 3)
+szc.Parent = szBtn
+
+szBtn.MouseButton1Click:Connect(function()
+    playClickSound()
+    pcall(function()
+        local char = localPlayer.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            char.HumanoidRootPart.CFrame = char.HumanoidRootPart.CFrame + Vector3.new(0, 300, 0)
+            sendNotification("Safe Zone TP!")
+        end
+    end)
+end)
+
+print("✅ TAKAA HUB FIXED & LOADED SUCCESSFULLY!")
+sendNotification("TAKAA HUB Ready!")
